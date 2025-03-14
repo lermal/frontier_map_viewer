@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShuttleViewerController;
 use App\Http\Controllers\AppController;
+use App\Http\Controllers\PoiImageController;
 use Illuminate\Support\Facades\Storage;
 
 /*
@@ -45,3 +46,6 @@ Route::get('/poi/{id}', function ($id) {
         'description' => 'Description will be loaded from YAML file' // Временно
     ]);
 });
+
+// Маршрут для обработки изображений POI
+Route::get('/poi/{poiName}/image', [PoiImageController::class, 'processPoi']);

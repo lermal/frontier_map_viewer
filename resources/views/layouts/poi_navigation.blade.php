@@ -264,92 +264,72 @@ document.addEventListener('DOMContentLoaded', function() {
         container.innerHTML = '';
         container.appendChild(renderWrapper);
 
-        const timestamp = new Date().getTime();
-        const blockSize = 256;
-        const img = new Image();
+        const poiItem = document.querySelector(`.poi-item[data-id="${poiId}"]`);
+        const name = poiItem.dataset.name;
+        const filePath = poiItem.dataset.file;
 
-        img.onload = function() {
-            renderWrapper.style.width = img.width + 'px';
-            renderWrapper.style.height = img.height + 'px';
-
-            // Центрируем изображение
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            currentTransform.x = (windowWidth - img.width) / 2;
-            currentTransform.y = (windowHeight - img.height) / 2;
-            updateTransform();
-
-            // Создаем основной canvas
-            const mainCanvas = document.createElement('canvas');
-            mainCanvas.width = img.width;
-            mainCanvas.height = img.height;
-            const ctx = mainCanvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-
-            // Рисуем все изображение сразу на основной canvas
-            ctx.drawImage(img, 0, 0, img.width, img.height);
-
-            // Добавляем стили для canvas
-            mainCanvas.style.imageRendering = 'pixelated';
-            mainCanvas.style.imageRendering = 'crisp-edges';
-            renderWrapper.appendChild(mainCanvas);
-
-            // Создаем массив блоков для анимации
-            const blocks = [];
-            for (let y = 0; y < img.height; y += blockSize) {
-                for (let x = 0; x < img.width; x += blockSize) {
-                    const width = Math.min(blockSize, img.width - x);
-                    const height = Math.min(blockSize, img.height - y);
-
-                    blocks.push({
-                        x, y, width, height,
-                        distance: Math.sqrt(x * x + y * y)
-                    });
+        // Сначала получаем метаданные POI
+        fetch(`/api/poi/${poiId}`)
+            .then(response => response.json())
+            .then(poiData => {
+                if (poiData.error) {
+                    throw new Error(poiData.error);
                 }
-            }
 
-            // Сортируем блоки по расстоянию от центра
-            blocks.sort((a, b) => a.distance - b.distance);
+                // Используем ID для загрузки рендера
+                return fetch(`/api/poi/${encodeURIComponent(poiId)}/image`);
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
 
-            // Вычисляем максимальное расстояние для нормализации задержки
-            const maxDistance = blocks[blocks.length - 1].distance;
-            const baseDelay = 20;
+                renderWrapper.style.width = data.width + 'px';
+                renderWrapper.style.height = data.height + 'px';
 
-            // Анимируем блоки
-            blocks.forEach((block, index) => {
-                const delay = baseDelay * index;
+                // Центрируем изображение
+                const containerRect = container.getBoundingClientRect();
+                currentTransform.x = (containerRect.width - data.width) / 2;
+                currentTransform.y = (containerRect.height - data.height) / 2;
+                updateTransform();
 
-                // Создаем блок затемнения
-                const overlayDiv = document.createElement('div');
-                overlayDiv.style.position = 'absolute';
-                overlayDiv.style.left = block.x + 'px';
-                overlayDiv.style.top = block.y + 'px';
-                overlayDiv.style.width = block.width + 'px';
-                overlayDiv.style.height = block.height + 'px';
-                overlayDiv.style.backgroundColor = '#000';
-                overlayDiv.style.transition = 'opacity 0.5s ease-out';
-                overlayDiv.style.opacity = '1';
-                overlayDiv.style.pointerEvents = 'none';
-                renderWrapper.appendChild(overlayDiv);
+                // Сортируем блоки от центра
+                const centerX = data.width / 2;
+                const centerY = data.height / 2;
+                const blocks = data.blocks.sort((a, b) => {
+                    const distA = Math.sqrt(Math.pow(a.x + a.width/2 - centerX, 2) + Math.pow(a.y + a.height/2 - centerY, 2));
+                    const distB = Math.sqrt(Math.pow(b.x + b.width/2 - centerX, 2) + Math.pow(b.y + b.height/2 - centerY, 2));
+                    return distA - distB;
+                });
 
-                setTimeout(() => {
-                    // Плавно убираем затемнение
-                    overlayDiv.style.opacity = '0';
+                // Загружаем блоки
+                blocks.forEach((block, index) => {
+                    const blockCanvas = document.createElement('canvas');
+                    blockCanvas.width = block.width;
+                    blockCanvas.height = block.height;
+                    blockCanvas.style.position = 'absolute';
+                    blockCanvas.style.left = block.x + 'px';
+                    blockCanvas.style.top = block.y + 'px';
+                    blockCanvas.style.opacity = '0';
+                    blockCanvas.style.transition = 'opacity 0.3s ease-in';
+                    renderWrapper.appendChild(blockCanvas);
 
-                    // Удаляем блок после анимации
-                    setTimeout(() => {
-                        overlayDiv.remove();
-                    }, 500);
-                }, delay);
+                    const blockImg = new Image();
+                    blockImg.onload = function() {
+                        const ctx = blockCanvas.getContext('2d');
+                        ctx.imageSmoothingEnabled = false;
+                        ctx.drawImage(blockImg, 0, 0);
+                        blockCanvas.style.opacity = '1';
+                    };
+
+                    blockImg.src = block.url;
+                });
+            })
+            .catch(error => {
+                console.error('Failed to load POI:', error);
+                container.innerHTML = `<div class="error-message">Ошибка загрузки изображения: ${error.message}</div>`;
             });
-        };
-
-        img.onerror = function() {
-            console.error('Failed to load POI render');
-            container.innerHTML = '<div class="error-message">Ошибка загрузки изображения</div>';
-        };
-
-        img.src = `/images/renders/${poiId}-0.png?v=${timestamp}`;
     }
 
     // Обработчик клика по POI
@@ -413,11 +393,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Добавляем стили для правильного отображения
     poiRenderContainer.style.overflow = 'hidden';
-    poiRender.style.transformOrigin = 'center center';
 
     // Добавляем стили
     const style = document.createElement('style');
     style.textContent = `
+        #poi-render-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        #poi-render {
+            transform-origin: center center;
+            position: absolute;
+        }
         #poi-render div {
             background: rgba(0, 0, 0, 0);
         }

@@ -7,6 +7,8 @@ use App\Http\Controllers\AppController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\PoiController;
 use App\Http\Controllers\PoiRenderController;
+use App\Http\Controllers\ShuttleImageController;
+use App\Http\Controllers\PoiImageController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -26,3 +28,7 @@ Route::get('sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/poi', [App\Http\Controllers\PoiController::class, 'index'])->name('poi.index');
 Route::get('/poi/render/{poiId}/block/{x}/{y}', [PoiRenderController::class, 'getBlock']);
 Route::get('/poi/render/{poiId}/metadata', [PoiRenderController::class, 'getMetadata']);
+
+// Маршруты для обработки изображений
+Route::get('/api/shuttle/{shuttleName}', [ShuttleImageController::class, 'processShuttle']);
+Route::get('/api/poi/{poiName}', [PoiImageController::class, 'processPoi']);
