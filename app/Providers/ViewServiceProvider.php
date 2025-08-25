@@ -32,14 +32,10 @@ class ViewServiceProvider extends ServiceProvider
                 'Syndicate' => 10,
             ];
 
-            // Группируем шаттлы
+            // Преобразуем новую структуру данных в ожидаемый формат
             $groupedShuttles = [];
-            foreach ($shuttleData as $shuttle) {
-                $group = $shuttle['group'] ?? '';
-                if (!isset($groupedShuttles[$group])) {
-                    $groupedShuttles[$group] = ['default' => []];
-                }
-                $groupedShuttles[$group]['default'][] = $shuttle;
+            foreach ($shuttleData as $groupName => $shuttles) {
+                $groupedShuttles[$groupName] = ['default' => $shuttles];
             }
 
             // Сортируем группы в нужном порядке
@@ -49,9 +45,15 @@ class ViewServiceProvider extends ServiceProvider
                 return $orderA - $orderB;
             });
 
-            $uniqueCategories = collect($shuttleData)->pluck('category')->unique()->values();
-            $uniqueClasses = collect($shuttleData)->pluck('class')->flatten()->unique()->values();
-            $uniqueEngines = collect($shuttleData)->pluck('engine')->flatten()->unique()->values();
+            // Создаем плоский массив всех шаттлов для получения уникальных значений
+            $allShuttles = [];
+            foreach ($shuttleData as $shuttles) {
+                $allShuttles = array_merge($allShuttles, $shuttles);
+            }
+
+            $uniqueCategories = collect($allShuttles)->pluck('category')->unique()->values();
+            $uniqueClasses = collect($allShuttles)->pluck('class')->flatten()->unique()->values();
+            $uniqueEngines = collect($allShuttles)->pluck('engine')->flatten()->unique()->values();
 
             $view->with([
                 'uniqueCategories' => $uniqueCategories,

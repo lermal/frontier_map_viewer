@@ -25,14 +25,10 @@ class AppController extends Controller
             'Syndicate' => 10,
         ];
 
-        // Группируем шаттлы
+        // Преобразуем новую структуру данных в ожидаемый формат
         $groupedShuttles = [];
-        foreach ($shuttleData as $shuttle) {
-            $group = $shuttle['group'] ?? '';
-            if (!isset($groupedShuttles[$group])) {
-                $groupedShuttles[$group] = ['default' => []];
-            }
-            $groupedShuttles[$group]['default'][] = $shuttle;
+        foreach ($shuttleData as $groupName => $shuttles) {
+            $groupedShuttles[$groupName] = ['default' => $shuttles];
         }
 
         // Сортируем группы в нужном порядке
@@ -51,14 +47,10 @@ class AppController extends Controller
     {
         $shuttleData = json_decode(Storage::get('shuttles/shipyard_data.json'), true);
 
-        // Группируем шаттлы
+        // Преобразуем новую структуру данных в ожидаемый формат
         $groupedShuttles = [];
-        foreach ($shuttleData as $shuttle) {
-            $group = $shuttle['group'] ?? '';
-            if (!isset($groupedShuttles[$group])) {
-                $groupedShuttles[$group] = ['default' => []];
-            }
-            $groupedShuttles[$group]['default'][] = $shuttle;
+        foreach ($shuttleData as $groupName => $shuttles) {
+            $groupedShuttles[$groupName] = ['default' => $shuttles];
         }
 
         return response()->json($groupedShuttles);

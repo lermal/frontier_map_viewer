@@ -36,8 +36,14 @@ class SitemapController extends Controller
         }
 
         // Добавляем все шаттлы
-        $shuttles = $this->getShuttles();
-        foreach ($shuttles as $shuttle) {
+        $shuttleData = $this->getShuttles();
+        // Преобразуем новую структуру данных в плоский массив
+        $allShuttles = [];
+        foreach ($shuttleData as $groupName => $shuttles) {
+            $allShuttles = array_merge($allShuttles, $shuttles);
+        }
+        
+        foreach ($allShuttles as $shuttle) {
             $content .= $this->addUrl(
                 $this->baseUrl . '/?shuttle=' . urlencode($shuttle['id']),
                 '0.7',
