@@ -28,6 +28,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('shuttle-render-container');
     const infoBlock = document.getElementById('info-block');
 
+    // Элементы навигации и фильтров
+    const filterToggle = document.querySelector('.filter-toggle');
+    const shuttleToggle = document.querySelector('.shuttle-toggle');
+    const filterDropdown = document.querySelector('.filter-dropdown');
+    const dropdownContent = document.querySelector('.dropdown-content');
+    const checkboxes = document.querySelectorAll('.shuttle-filter');
+    const shuttleItems = Array.from(document.querySelectorAll('.shuttle-item'));
+
     let currentTransform = {
         x: 0,
         y: 0,
@@ -54,8 +62,6 @@ document.addEventListener('DOMContentLoaded', function () {
         container.style.display = 'none';
         infoBlock.style.display = 'flex';
     }
-
-    const shuttleItems = document.querySelectorAll('.shuttle-item');
 
     // Обновляем обработчик клика по shuttle-item
     shuttleItems.forEach(item => {
@@ -341,4 +347,202 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     `;
     document.head.appendChild(style);
+
+    // Логика навигации и фильтрации
+    if (filterToggle && shuttleToggle && filterDropdown && dropdownContent) {
+        // Обработчик для кнопки выбора шаттла
+        shuttleToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownContent.classList.toggle('show');
+            // Закрываем фильтры если открыты
+            filterDropdown.classList.remove('show');
+        });
+
+        // Обработчик для кнопки фильтров
+        filterToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            filterDropdown.classList.toggle('show');
+            dropdownContent.classList.remove('show');
+        });
+
+        // Функция для получения доступных комбинаций
+        function getAvailableFilters() {
+            const combinations = new Map();
+
+            shuttleItems.forEach(item => {
+                const category = item.dataset.category;
+                const classes = item.dataset.class.split(', ');
+                const engines = item.dataset.engines.split(', ');
+
+                // Добавляем комбинации для классов
+                classes.forEach(cls => {
+                    if (!combinations.has(cls)) {
+                        combinations.set(cls, new Set());
+                    }
+                    combinations.get(cls).add(category);
+                });
+
+                // Добавляем комбинации для двигателей
+                engines.forEach(engine => {
+                    if (!combinations.has(engine)) {
+                        combinations.set(engine, new Set());
+                    }
+                    combinations.get(engine).add(category);
+                });
+            });
+
+            return combinations;
+        }
+
+        // Функция обновления состояния чекбоксов
+        function updateCheckboxStates() {
+            const combinations = getAvailableFilters();
+            const selectedCategories = Array.from(checkboxes)
+                .filter(cb => cb.checked && cb.dataset.filterType === 'category')
+                .map(cb => cb.value);
+
+            const selectedClasses = Array.from(checkboxes)
+                .filter(cb => cb.checked && cb.dataset.filterType === 'class')
+                .map(cb => cb.value);
+
+            const selectedEngines = Array.from(checkboxes)
+                .filter(cb => cb.checked && cb.dataset.filterType === 'engine')
+                .map(cb => cb.value);
+
+            // Обновляем доступность чекбоксов
+            checkboxes.forEach(checkbox => {
+                let isAvailable = true;
+
+                if (checkbox.dataset.filterType === 'class') {
+                    if (selectedCategories.length > 0) {
+                        isAvailable = selectedCategories.some(category => {
+                            return combinations.has(checkbox.value) &&
+                                   combinations.get(checkbox.value).has(category);
+                        });
+                    }
+                    if (selectedEngines.length > 0 && isAvailable) {
+                        isAvailable = shuttleItems.some(item => {
+                            const itemEngines = item.dataset.engines.split(', ');
+                            const itemClasses = item.dataset.class.split(', ');
+                            return itemClasses.includes(checkbox.value) &&
+                                   selectedEngines.some(engine => itemEngines.includes(engine));
+                        });
+                    }
+                }
+
+                if (checkbox.dataset.filterType === 'category') {
+                    if (selectedClasses.length > 0) {
+                        isAvailable = selectedClasses.some(cls => {
+                            return combinations.has(cls) &&
+                                   combinations.get(cls).has(checkbox.value);
+                        });
+                    }
+                    if (selectedEngines.length > 0 && isAvailable) {
+                        isAvailable = shuttleItems.some(item => {
+                            const itemEngines = item.dataset.engines.split(', ');
+                            return item.dataset.category === checkbox.value &&
+                                   selectedEngines.some(engine => itemEngines.includes(engine));
+                        });
+                    }
+                }
+
+                if (checkbox.dataset.filterType === 'engine') {
+                    if (selectedCategories.length > 0) {
+                        isAvailable = shuttleItems.some(item => {
+                            const itemEngines = item.dataset.engines.split(', ');
+                            return itemEngines.includes(checkbox.value) &&
+                                   selectedCategories.includes(item.dataset.category);
+                        });
+                    }
+                    if (selectedClasses.length > 0 && isAvailable) {
+                        isAvailable = shuttleItems.some(item => {
+                            const itemEngines = item.dataset.engines.split(', ');
+                            const itemClasses = item.dataset.class.split(', ');
+                            return itemEngines.includes(checkbox.value) &&
+                                   selectedClasses.some(cls => itemClasses.includes(cls));
+                        });
+                    }
+                }
+
+                checkbox.disabled = !isAvailable;
+                checkbox.parentElement.style.opacity = checkbox.disabled ? '0.5' : '1';
+            });
+        }
+
+        // Обработчик изменения чекбоксов
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const selectedClasses = Array.from(checkboxes)
+                    .filter(cb => cb.checked && cb.dataset.filterType === 'class')
+                    .map(cb => cb.value);
+
+                const selectedCategories = Array.from(checkboxes)
+                    .filter(cb => cb.checked && cb.dataset.filterType === 'category')
+                    .map(cb => cb.value);
+
+                const selectedEngines = Array.from(checkboxes)
+                    .filter(cb => cb.checked && cb.dataset.filterType === 'engine')
+                    .map(cb => cb.value);
+
+                let visibleShuttlesCount = 0;
+
+                shuttleItems.forEach(item => {
+                    const shuttleClasses = item.dataset.class.split(', ');
+                    const shuttleCategory = item.dataset.category;
+                    const shuttleEngines = item.dataset.engines.split(', ');
+
+                    const matchesClass = selectedClasses.length === 0 ||
+                        shuttleClasses.some(cls => selectedClasses.includes(cls));
+
+                    const matchesCategory = selectedCategories.length === 0 ||
+                        selectedCategories.includes(shuttleCategory);
+
+                    const matchesEngine = selectedEngines.length === 0 ||
+                        shuttleEngines.some(engine => selectedEngines.includes(engine));
+
+                    const shouldShow = matchesClass && matchesCategory && matchesEngine;
+                    item.style.display = shouldShow ? '' : 'none';
+                    if (shouldShow) visibleShuttlesCount++;
+                });
+
+                // Обновляем состояние чекбоксов
+                updateCheckboxStates();
+
+                // Скрываем пустые категории
+                document.querySelectorAll('.dropdown-category').forEach(category => {
+                    const visibleShuttles = category.querySelectorAll('.shuttle-item[style="display: block"], .shuttle-item:not([style*="display: none"])');
+                    category.style.display = visibleShuttles.length > 0 ? 'block' : 'none';
+                });
+
+                // Показываем/скрываем сообщение об отсутствии результатов
+                const noResultsMessage = document.getElementById('no-results-message');
+                if (noResultsMessage) {
+                    noResultsMessage.style.display = visibleShuttlesCount === 0 ? 'block' : 'none';
+                }
+            });
+        });
+
+        // Инициализируем состояния чекбоксов при загрузке
+        updateCheckboxStates();
+
+        // Предотвращаем закрытие при клике внутри dropdown-content
+        dropdownContent.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Предотвращаем закрытие при клике внутри filter-dropdown
+        filterDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Закрытие dropdowns при клике вне их области
+        document.addEventListener('click', function(e) {
+            if (!filterDropdown.contains(e.target) && !filterToggle.contains(e.target)) {
+                filterDropdown.classList.remove('show');
+            }
+            if (!dropdownContent.contains(e.target) && !shuttleToggle.contains(e.target)) {
+                dropdownContent.classList.remove('show');
+            }
+        });
+    }
 });
