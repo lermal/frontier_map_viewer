@@ -76,5 +76,5 @@
 @endsection
 
 @section('footer_scripts')
-<script src="{{ asset('js/main.js?v2.0.6') }}"></script>
+<script src="{{ asset('js/main.js?v3.0.0') }}"></script>
 @endsection
