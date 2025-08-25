@@ -198,13 +198,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 container.innerHTML = `
                     <div class="error-message">
                         <p>Ошибка загрузки изображения шаттла</p>
-                        <p>Путь: /images/renders/${shuttleId}-0.png</p>
+                        <p>Путь: /images/renders/${shuttleId}/${shuttleId}-0.png</p>
                         <p>Пожалуйста, проверьте наличие файла</p>
                     </div>`;
             }
         };
 
-        img.src = `/images/renders/${shuttleId}-0.png?v=${timestamp}`;
+        img.src = `/images/renders/${shuttleId}/${shuttleId}-0.png?v=${timestamp}`;
     }
 
     function showButtons(canvas, shuttleId) {
