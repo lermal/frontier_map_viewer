@@ -1,3 +1,27 @@
+// Глобальная функция для обновления информации о шаттле
+function updateShuttleInfo(item) {
+    const shuttleName = document.getElementById('shuttle-name');
+    const shuttlePrice = document.getElementById('shuttle-price');
+    const shuttleDescription = document.getElementById('shuttle-description');
+    const shuttleClass = document.getElementById('shuttle-class');
+    const infoPanel = document.getElementById('shuttle-info-panel');
+
+    if (shuttleName) shuttleName.textContent = item.getAttribute('data-name');
+    if (shuttlePrice) shuttlePrice.textContent = new Intl.NumberFormat('ru-RU').format(item.getAttribute('data-price')) + ' spesos';
+    if (shuttleDescription) shuttleDescription.textContent = item.getAttribute('data-description');
+
+    // Обновляем классы
+    if (shuttleClass) {
+        const classes = item.getAttribute('data-class').split(', ');
+        shuttleClass.innerHTML = classes
+            .map(cls => `<span class="class-tag">${cls}</span>`)
+            .join('');
+    }
+
+    // Показываем панель
+    if (infoPanel) infoPanel.style.display = 'block';
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const shuttleLinks = document.querySelectorAll('.shuttle-select');
     const shuttleRender = document.getElementById('shuttle-render');
@@ -18,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Проверяем URL при загрузке страницы
     const urlParams = new URLSearchParams(window.location.search);
     const initialShuttleId = urlParams.get('shuttle');
-    if (initialShuttleId) {
+    if (initialShuttleId && container && infoBlock) {
         const shuttleItem = document.querySelector(`.shuttle-item[data-id="${initialShuttleId}"]`);
         if (shuttleItem) {
             updateShuttleInfo(shuttleItem);
@@ -26,34 +50,12 @@ document.addEventListener('DOMContentLoaded', function () {
             container.style.display = 'block';
             infoBlock.style.display = 'none';
         }
-    } else {
+    } else if (container && infoBlock) {
         container.style.display = 'none';
         infoBlock.style.display = 'flex';
     }
 
     const shuttleItems = document.querySelectorAll('.shuttle-item');
-
-    // Функция обновления информации о шаттле
-    function updateShuttleInfo(item) {
-        const shuttleName = document.getElementById('shuttle-name');
-        const shuttlePrice = document.getElementById('shuttle-price');
-        const shuttleDescription = document.getElementById('shuttle-description');
-        const shuttleClass = document.getElementById('shuttle-class');
-        const infoPanel = document.getElementById('shuttle-info-panel');
-
-        shuttleName.textContent = item.getAttribute('data-name');
-        shuttlePrice.textContent = new Intl.NumberFormat('ru-RU').format(item.getAttribute('data-price')) + ' spesos';
-        shuttleDescription.textContent = item.getAttribute('data-description');
-
-        // Обновляем классы
-        const classes = item.getAttribute('data-class').split(', ');
-        shuttleClass.innerHTML = classes
-            .map(cls => `<span class="class-tag">${cls}</span>`)
-            .join('');
-
-        // Показываем панель
-        infoPanel.style.display = 'block';
-    }
 
     // Обновляем обработчик клика по shuttle-item
     shuttleItems.forEach(item => {
@@ -69,8 +71,8 @@ document.addEventListener('DOMContentLoaded', function () {
             // Обновляем информацию и загружаем рендер
             updateShuttleInfo(this);
             loadShuttleRender(shuttleId);
-            container.style.display = 'block';
-            infoBlock.style.display = 'none';
+            if (container) container.style.display = 'block';
+            if (infoBlock) infoBlock.style.display = 'none';
         });
     });
 
@@ -78,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('popstate', function() {
         const urlParams = new URLSearchParams(window.location.search);
         const shuttleId = urlParams.get('shuttle');
-        if (shuttleId) {
+        if (shuttleId && container && infoBlock) {
             const shuttleItem = document.querySelector(`.shuttle-item[data-id="${shuttleId}"]`);
             if (shuttleItem) {
                 updateShuttleInfo(shuttleItem);
@@ -86,42 +88,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 container.style.display = 'block';
                 infoBlock.style.display = 'none';
             }
-        } else {
+        } else if (container && infoBlock) {
             container.style.display = 'none';
             infoBlock.style.display = 'block';
         }
     });
 
-    container.addEventListener('wheel', function(event) {
-        event.preventDefault();
+    if (container) {
+        container.addEventListener('wheel', function(event) {
+            event.preventDefault();
 
-        const scaleAmount = -event.deltaY * 0.001;
+            const scaleAmount = -event.deltaY * 0.001;
 
-        currentTransform.scale *= (1 + scaleAmount);
-
-        currentTransform.scale = Math.min(Math.max(currentTransform.scale, 0.1), 5);
-
-        updateTransform();
-    }, { passive: false });
+            currentTransform.scale *= (1 + scaleAmount);
+            currentTransform.scale = Math.min(Math.max(currentTransform.scale, 0.1), 5);
+            updateTransform();
+        });
+    }
 
     function loadShuttleRender(shuttleId) {
-        const renderWrapper = document.createElement('div');
-        renderWrapper.id = 'shuttle-render';
-        renderWrapper.style.position = 'relative';
-
-        const container = document.getElementById('shuttle-render-container');
-        container.innerHTML = '';
-        container.appendChild(renderWrapper);
-
-        const timestamp = new Date().getTime();
-        const blockSize = 256;
+        if (!container) return;
+        
+        const timestamp = Date.now();
         const img = new Image();
-
+        
         img.onload = function() {
+            container.innerHTML = '';
+            
+            const renderWrapper = document.createElement('div');
+            renderWrapper.id = 'shuttle-render';
+            renderWrapper.style.position = 'relative';
             renderWrapper.style.width = img.width + 'px';
             renderWrapper.style.height = img.height + 'px';
+            container.appendChild(renderWrapper);
 
-            // Центрируем изображение
+            // Вычисляем начальное положение для центрирования
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             currentTransform.x = (windowWidth - img.width) / 2;
@@ -133,18 +134,13 @@ document.addEventListener('DOMContentLoaded', function () {
             mainCanvas.width = img.width;
             mainCanvas.height = img.height;
             const ctx = mainCanvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-
-            // Рисуем все изображение сразу на основной canvas
-            ctx.drawImage(img, 0, 0, img.width, img.height);
-
-            // Добавляем стили для canvas
-            mainCanvas.style.imageRendering = 'pixelated';
-            mainCanvas.style.imageRendering = 'crisp-edges';
+            ctx.drawImage(img, 0, 0);
             renderWrapper.appendChild(mainCanvas);
 
-            // Создаем массив блоков для анимации
+            // Создаем блоки для анимации загрузки
+            const blockSize = 64;
             const blocks = [];
+
             for (let y = 0; y < img.height; y += blockSize) {
                 for (let x = 0; x < img.width; x += blockSize) {
                     const width = Math.min(blockSize, img.width - x);
@@ -198,12 +194,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         img.onerror = function() {
             console.error('Failed to load shuttle render');
-            container.innerHTML = `
-                <div class="error-message">
-                    <p>Ошибка загрузки изображения шаттла</p>
-                    <p>Путь: /images/renders/${shuttleId}-0.png</p>
-                    <p>Пожалуйста, проверьте наличие файла</p>
-                </div>`;
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p>Ошибка загрузки изображения шаттла</p>
+                        <p>Путь: /images/renders/${shuttleId}-0.png</p>
+                        <p>Пожалуйста, проверьте наличие файла</p>
+                    </div>`;
+            }
         };
 
         img.src = `/images/renders/${shuttleId}-0.png?v=${timestamp}`;
@@ -224,8 +222,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function loadImageInBlocks(imageUrl) {
         const img = new Image();
         img.onload = function() {
+            if (!container) return;
+            
             const blockSize = 256;
-            const container = document.getElementById('shuttle-render-container');
             container.innerHTML = '';
 
             const renderWrapper = document.createElement('div');
@@ -280,27 +279,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateTransform() {
         const renderElement = document.getElementById('shuttle-render');
-        renderElement.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) rotate(${currentTransform.rotate}deg) scale(${currentTransform.scale})`;
+        if (renderElement) {
+            renderElement.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) rotate(${currentTransform.rotate}deg) scale(${currentTransform.scale})`;
+        }
     }
 
-    interact('#shuttle-render-container')
-        .gesturable({
-            onmove: function (event) {
-                currentTransform.scale *= (1 + event.ds);
-                currentTransform.scale = Math.min(Math.max(currentTransform.scale, 0.1), 5);
-                updateTransform();
-            }
-        })
-        .draggable({
-            inertia: true,
-            listeners: {
-                move(event) {
-                    currentTransform.x += event.dx;
-                    currentTransform.y += event.dy;
+    if (container) {
+        interact('#shuttle-render-container')
+            .gesturable({
+                onmove: function (event) {
+                    currentTransform.scale *= (1 + event.ds);
+                    currentTransform.scale = Math.min(Math.max(currentTransform.scale, 0.1), 5);
                     updateTransform();
                 }
-            }
-        });
+            })
+            .draggable({
+                inertia: true,
+                listeners: {
+                    move(event) {
+                        currentTransform.x += event.dx;
+                        currentTransform.y += event.dy;
+                        updateTransform();
+                    }
+                }
+            });
+    }
 
     // Отключаем стандартные жесты масштабирования
     document.addEventListener('gesturestart', function(e) {
@@ -315,8 +318,14 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
     }, { passive: false });
 
-    document.getElementById('shuttle-render-container').style.overflow = 'hidden';
-    document.getElementById('shuttle-render').style.transformOrigin = 'center center';
+    if (container) {
+        container.style.overflow = 'hidden';
+    }
+    
+    const renderElement = document.getElementById('shuttle-render');
+    if (renderElement) {
+        renderElement.style.transformOrigin = 'center center';
+    }
 
     // Добавляем стили в head документа
     const style = document.createElement('style');
