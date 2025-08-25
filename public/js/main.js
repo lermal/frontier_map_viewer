@@ -195,16 +195,18 @@ document.addEventListener('DOMContentLoaded', function () {
         img.onerror = function() {
             console.error('Failed to load shuttle render');
             if (container) {
+                const lowerShuttleId = shuttleId.toLowerCase();
                 container.innerHTML = `
                     <div class="error-message">
                         <p>Ошибка загрузки изображения шаттла</p>
-                        <p>Путь: /images/renders/${shuttleId}/${shuttleId}-0.png</p>
+                        <p>Путь: /images/renders/${lowerShuttleId}/${lowerShuttleId}-0.png</p>
                         <p>Пожалуйста, проверьте наличие файла</p>
                     </div>`;
             }
         };
 
-        img.src = `/images/renders/${shuttleId}/${shuttleId}-0.png?v=${timestamp}`;
+        const lowerShuttleId = shuttleId.toLowerCase();
+        img.src = `/images/renders/${lowerShuttleId}/${lowerShuttleId}-0.png?v=${timestamp}`;
     }
 
     function showButtons(canvas, shuttleId) {
