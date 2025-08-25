@@ -1,0 +1,452 @@
+@font-face {
+    font-family: 'RemixIcon';
+    src: url('https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.woff2') format('woff2');
+    font-display: swap;
+}
+
+body {
+    background-color: #000000;
+    background-image: url('../images/parallax.webp');
+    background-size: 500px 500px;
+    background-repeat: repeat;
+    background-position: 0 0;
+    animation: parallaxScroll 60s linear infinite;
+    overflow-y: hidden;
+
+    font-family: 'Figtree', sans-serif;
+}
+
+.navigation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    background-color: rgba(36, 36, 36, 0.8);
+    margin: 10px;
+    border-radius: 10px;
+}
+
+.navbar-brand img {
+    width: 140px;
+}
+
+.navbar-items {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-primary {
+    position: relative;
+    background-color: #464b45;
+    color: #f2f4f1;
+    padding: 10px;
+
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    clip-path: polygon(
+        0 0,          /* Верхний левый угол */
+        calc(100% - 10px) 0,    /* Верхний крй */
+        100% 10px,    /* Правый верхний угол */
+        100% 100%,    /* Правый край */
+        10px 100%,    /* Нижний край */
+        0 calc(100% - 10px)     /* Левый нижний угол */
+    );
+
+    min-width: 100px;
+    text-align: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-primary i {
+    font-weight: 400;
+}
+
+/* Добавляем эффект при наведении */
+.btn-primary:hover {
+    background-color: #3e433d;
+    color: #f2f4f1;
+}
+
+/* Добавляем эффект при нажатии */
+.btn-primary:active {
+    background-color: #3e433d;
+    color: #f2f4f1;
+}
+
+.btn-primary:focus-visible {
+    outline: none;
+}
+
+.dropbtn__container {
+    display: flex;
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 10px 10px;
+    background-color: rgba(36, 36, 36, 0.8);
+    margin-left: 10px;
+    border-radius: 10px;
+}
+
+.dropbtn {
+    min-width: 200px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    margin-left: 10px;
+    margin-top: 10px;
+    display: none; /* Скрыть содержимое по умолчанию */
+    position: absolute; /* Позиционирование */
+    background-color: rgba(36, 36, 36, 1);
+    min-width: 600px; /* Минимальная ширина */
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Тень */
+    z-index: 3; /* Уровень наложения */
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px;
+
+    clip-path: polygon(
+        0 0,          /* Верхний левый угол */
+        calc(100% - 10px) 0,    /* Верхний край */
+        100% 15px,    /* Правый верхний угол */
+        100% 100%,    /* Правый край */
+        15px 100%,    /* Нижний край */
+        0 calc(100% - 15px)     /* Левый нижний угол */
+    );
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dropdown-category {
+    margin-bottom: 15px; /* Отступ между группами */
+}
+
+/* Стиль для названия группы */
+.group-name {
+    font-weight: 600;
+    font-size: 20px;
+    color: #a29778;
+}
+
+.dropdown-category hr {
+    border: 1px solid #a29778;
+    margin: 10px 0;
+}
+
+/* Список шаттлов */
+.shuttle-list {
+    list-style-type: none; /* Убрать маркеры списка */
+    padding: 0; /* Убрать отступы */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Три колонки */
+    gap: 10px; /* Расстояние между элемен��ами */
+}
+
+.shuttle-item {
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: #f2f4f1;
+    transition: background-color 0.2s;
+}
+
+.shuttle-item:hover {
+    background-color: #393939;
+}
+
+.shuttle-info {
+    font-size: 0.9em;
+    color: #666;
+
+}
+
+.shuttle-info span {
+    margin-right: 10px;
+}
+
+/* Адаптивность для меньших экранов */
+@media (max-width: 600px) {
+    .shuttle-list {
+        grid-template-columns: repeat(2, 1fr); /* Две колонки */
+    }
+}
+
+@media (max-width: 400px) {
+    .shuttle-list {
+        grid-template-columns: 1fr; /* Одна колонка */
+    }
+}
+
+/* Определение ключевых кадров для анимации */
+@keyframes parallaxScroll {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 500px 500px;
+    }
+}
+
+/* Параллакс фон для контейнера рендера шаттлов */
+#shuttle-render-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #000000;
+    background-image: url('../images/parallax.webp');
+    background-size: 1000px 1000px;
+    background-repeat: repeat;
+    background-position: 0 0;
+    animation: parallaxScroll 60s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+}
+
+/* Стили для изображения шаттла */
+#shuttle-render {
+    max-width: 100%;
+    max-height: 100%;
+    position: relative;
+    transform: translate(0px, 0px) rotate(0deg) scale(1);
+    transition: transform 0.1s ease;
+    cursor: grab;
+    image-rendering: pixelated;
+}
+
+#shuttle-render:active {
+    cursor: grabbing;
+}
+
+.info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    padding: 20px;
+}
+
+.info-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.info-container p {
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.category-section {
+    margin-bottom: 15px;
+}
+
+.category-name {
+    font-weight: bold;
+    margin: 10px 0;
+    color: #333;
+    text-align: center;
+}
+
+/* Стили для scrollbar в выпадающем меню */
+.dropdown-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.dropdown-content::-webkit-scrollbar-track {
+    background: #2a2a2a;
+    border-radius: 5px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb {
+    background: #3d3d3d;
+    border-radius: 5px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+    background: #4a4a4a;
+}
+
+/* Для Firefox */
+.dropdown-content {
+    scrollbar-width: thin;
+    scrollbar-color: #3d3d3d #2a2a2a;
+}
+
+.shuttle-info-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: rgba(36, 36, 36, 0.9);
+    padding: 20px;
+    color: #f2f4f1;
+    max-width: 400px;
+    z-index: 2;
+    display: none;
+
+    clip-path: polygon(
+        0 0,          /* Верхний левый угол */
+        calc(100% - 15px) 0,    /* Верхний край */
+        100% 15px,    /* Правый верхний угол */
+        100% 100%,    /* Правый край */
+        15px 100%,    /* Нижний край */
+        0 calc(100% - 15px)     /* Левый нижний угол */
+    );
+}
+
+.shuttle-info-panel h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.4em;
+    color: #a29778;
+}
+
+.shuttle-price {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #28f690;
+}
+
+.shuttle-class-tags {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.class-tag {
+    background-color: #464b45;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.info-block__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+
+    background-color: rgba(36, 36, 36, 0.8);
+
+    clip-path: polygon(
+        0 0,          /* Верхний левый угол */
+        calc(100% - 10px) 0,    /* Верхний край */
+        100% 15px,    /* Правый верхний угол */
+        100% 100%,    /* Правый край */
+        15px 100%,    /* Нижний край */
+        0 calc(100% - 15px)     /* Левый нижний угол */
+    );
+}
+
+.info-block__container h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #a29778;
+}
+
+.info-block__container p {
+    font-size: 24px;
+    font-weight: 400;
+    color: #f2f4f1;
+}
+
+@media (max-width: 640px) {
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+
+    .dropdown-content {
+        min-width: initial;
+        width: calc(100vw - 40px);
+        margin: 0 10px;
+        margin-top: 10px;
+    }
+
+
+
+
+    .info-block__container {
+        max-width: 100%;
+    }
+
+    .shuttle-info-panel {
+        margin: 0 10px;
+        left: 0;
+        bottom: 10px
+    }
+}
+
+@media (max-width: 480px) {
+
+    .navbar-items {
+        justify-content: center;
+    }
+
+    .shuttle-item {
+        width: 100%;
+    }
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+#shuttle-render div {
+    background: rgba(0, 0, 0, 0);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    image-rendering: pixelated;
+}
+#shuttle-render img {
+    display: block;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    image-rendering: pixelated;
+}
