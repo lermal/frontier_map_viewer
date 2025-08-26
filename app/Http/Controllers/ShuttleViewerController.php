@@ -101,7 +101,7 @@ class ShuttleViewerController extends Controller
                 $blockHeight = min($blockSize, $height - $y);
 
                 $blockName = sprintf("%s_block_%d_%d_%d.png", $shuttleName, $blockIndex, $x, $y);
-                $blockPath = "storage/blocks/{$blockName}";
+                $blockPath = "images/blocks/{$blockName}";
                 $fullBlockPath = storage_path("app/public/blocks/{$blockName}");
 
                 Log::info("Попытка создания блока: " . $fullBlockPath);

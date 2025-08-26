@@ -45,7 +45,7 @@ abstract class ImageProcessingController extends Controller
                     $blockImage->save($blockPath, 'png', 80);
 
                     $blocks[] = [
-                        'url' => asset("storage/blocks/{$blockName}"),
+                        'url' => asset("images/blocks/{$blockName}"),
                         'x' => $x,
                         'y' => $y,
                         'width' => $blockWidth,

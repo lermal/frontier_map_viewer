@@ -28,7 +28,7 @@ class ShuttleImageController extends ImageProcessingController
             return response()->json(['error' => 'Шаттл не найден'], 404);
         }
 
-        $outputDir = public_path('storage/blocks');
+        $outputDir = public_path('images/blocks');
         $result = $this->processImage($imagePath, $outputDir, $shuttleName);
 
         if (!$result['success']) {
