@@ -26,6 +26,7 @@ Route::get('/shuttle/{shuttleName}', [ShuttleViewerController::class, 'loadShutt
 Route::get('/shipyard/json', [ShipyardController::class, 'convertYmlToJson']);
 Route::get('sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/poi', [App\Http\Controllers\PoiController::class, 'index'])->name('poi.index');
+Route::get('/poi/{poiId}', [App\Http\Controllers\PoiController::class, 'loadPoi']);
 Route::get('/poi/render/{poiId}/block/{x}/{y}', [PoiRenderController::class, 'getBlock']);
 Route::get('/poi/render/{poiId}/metadata', [PoiRenderController::class, 'getMetadata']);
 

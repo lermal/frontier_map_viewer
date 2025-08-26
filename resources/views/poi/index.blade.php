@@ -11,7 +11,7 @@ Explore points of interest from the Frontier Station server in Space Station 14.
 @endsection
 
 @section('content')
-<div class="container">
+    <!-- Информационный блок -->
     <div id="info-block" class="info-container">
         <div class="info-block__container">
             <h1>Points of Interest in Frontier Station 14</h1>
@@ -19,8 +19,9 @@ Explore points of interest from the Frontier Station server in Space Station 14.
         </div>
     </div>
 
-    <!-- Контейнер для отображения POI -->
+    <!-- Контейнер для отображения POI с параллакс-фоном -->
     <div id="poi-render-container">
+        <img id="poi-render" src="" alt="POI Render">
     </div>
 
     <!-- Панель информации о POI -->
@@ -32,124 +33,21 @@ Explore points of interest from the Frontier Station server in Space Station 14.
     <div class="seo-content" style="position: absolute; left: -9999px;">
         <h2>Notable Points of Interest in Frontier Station 14</h2>
         <ul>
-            @foreach($pois as $poi)
-                <li class="poi-item"
-                    data-id="{{ $poi['id'] }}"
-                    data-name="{{ $poi['name'] }}">
-                    <h3 class="poi-name">{{ $poi['name'] }}</h3>
-                </li>
+            @foreach($groupedPoi as $letter => $points)
+                @foreach($points as $poi)
+                    <li class="poi-item"
+                        data-id="{{ $poi['id'] }}"
+                        data-name="{{ $poi['name'] }}"
+                        data-category="{{ $poi['category'] ?? '' }}"
+                        data-type="{{ $poi['type'] ?? '' }}">
+                        <h3 class="poi-name">{{ $poi['name'] }}</h3>
+                    </li>
+                @endforeach
             @endforeach
         </ul>
     </div>
-</div>
 @endsection
 
-@section('head_styles')
-<style>
-.container {
-    max-width: 100%;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-}
-
-.info-container {
-    padding: 20px;
-    margin: 20px;
-    clip-path: polygon(
-        0 0,
-        calc(100% - 10px) 0,
-        100% 10px,
-        100% 100%,
-        10px 100%,
-        0 calc(100% - 10px)
-    );
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-}
-
-.info-block__container {
-    text-align: center;
-}
-
-.info-block__container h1 {
-    color: #a29778;
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-.info-block__container p {
-    color: #f2f4f1;
-    font-size: 16px;
-}
-
-#poi-render-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
-    cursor: grab;
-    overflow: hidden;
-}
-
-#poi-render-container:active {
-    cursor: grabbing;
-}
-
-#poi-render {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    transform-origin: center;
-    transition: transform 0.1s ease-out;
-    user-select: none;
-    -webkit-user-drag: none;
-}
-
-.poi-info-panel {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background-color: rgba(36, 36, 36, 0.8);
-    padding: 20px;
-    z-index: 3;
-    min-width: 300px;
-    clip-path: polygon(
-        0 0,
-        calc(100% - 10px) 0,
-        100% 10px,
-        100% 100%,
-        10px 100%,
-        0 calc(100% - 10px)
-    );
-    display: none;
-}
-
-.poi-info-panel h2 {
-    color: #a29778;
-    font-size: 20px;
-    margin: 0;
-}
-
-@media (max-width: 768px) {
-    .info-container {
-        margin: 10px;
-        padding: 15px;
-    }
-
-    .poi-info-panel {
-        left: 10px;
-        bottom: 10px;
-        min-width: calc(100% - 20px);
-    }
-}
-</style>
+@section('footer_scripts')
+<script src="{{ asset('js/poi.js?v1.0.0') }}"></script>
 @endsection
