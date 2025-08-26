@@ -39,7 +39,10 @@ class PoiImageController extends ImageProcessingController
         // Создаем директорию для блоков, если её нет
         $outputDir = public_path('storage/blocks');
         if (!file_exists($outputDir)) {
-            mkdir($outputDir, 0755, true);
+            if (!mkdir($outputDir, 0755, true) && !is_dir($outputDir)) {
+                Log::error('Не удалось создать директорию: ' . $outputDir);
+                return response()->json(['error' => 'Не удалось создать директорию для обработки изображений'], 500);
+            }
         }
 
         // Очищаем старые блоки для этого рендера
