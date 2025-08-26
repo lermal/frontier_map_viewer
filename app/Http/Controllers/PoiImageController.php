@@ -22,10 +22,10 @@ class PoiImageController extends ImageProcessingController
         }
 
         // Декодируем ID из URL
-        $poiId = urldecode($poiId);
+        $poiId = strtolower(urldecode($poiId));
 
         // Проверяем наличие файла в директории renders
-        $imagePath = public_path("images/renders/{$poiId}-0.png");
+        $imagePath = public_path("images/renders/{$poiId}/{$poiId}-0.png");
 
         Log::info('Проверяем путь: ' . $imagePath);
 
